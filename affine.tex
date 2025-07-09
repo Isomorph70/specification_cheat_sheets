@@ -1,0 +1,315 @@
+\documentclass[10pt,a4paper]{article}
+\usepackage[margin=1cm]{geometry}
+\usepackage{multicol}
+\usepackage{amsmath,amssymb}
+\usepackage{mathpartir}
+\usepackage{hyperref}
+
+%\usepackage{accents}
+%\newcommand{\qstar}{\underaccent{\cdot}{\star}}
+% Custom commands
+\newcommand{\emp}{[\: ]} %\mathit{emp}}
+\newcommand{\hwand}{-\!\!\star}
+\newcommand{\qwand}{-\!\!\text{\d{$\star$}}}
+\newcommand{\qstar}{\text{ \d{$\star$} }} %{\scriptscriptstyle\!\!+}}
+\newcommand{\mapstoheap}{\mapsto}
+\newcommand{\himpl}{\vdash}
+%\newcommand{\qimpl}{\underaccent{\cdot}{\vdash}}
+\newcommand{\qimpl}{\text{ \d{$\vdash$} }}
+
+% Affine heap
+\newcommand{\heapaffine}[1]{\mathsf{heap\_affine}(#1)}
+
+% Affine predicate
+\newcommand{\haffine}[1]{\mathsf{affine}(#1)}
+\newcommand{\triple}[3]{\{#2\}\;#1\;\{#3\}}
+% Affine-top predicate
+\newcommand{\hgc}{\mathsf{GC}} % or \mathsf{hgc}
+
+% Value constructors
+\newcommand{\valint}[1]{#1}
+\newcommand{\valbool}[1]{#1}
+\newcommand{\valloc}[1]{#1}
+
+% Logical helpers
+\newcommand{\isTrue}[1]{#1}
+\newcommand{\abs}[1]{|#1|}
+
+% Integer operations (Z scope)
+\newcommand{\Zquot}[2]{#1 \mathbin{/} #2}
+\newcommand{\Zrem}[2]{#1 \mathbin{\%} #2}
+
+% Optional: function syntax
+\newcommand{\fun}[2]{\lambda #1.~#2}
+
+
+\hypersetup{
+ pdfauthor={Svend H. Sørensen},
+ pdftitle={Separation Logic Affine Cheat Sheet},
+ pdfkeywords={Logic, Program logic, Substructural logic, Axiomatic semantics, Computer science},
+ pdfsubject={Axiomatic semantics},
+ pdfcreator={Emacs 26.3, pdflatex}, 
+ pdflang={English}}
+
+\begin{document}
+\pagestyle{empty}
+\begin{center}
+  {\LARGE \textbf{Garbage Collection Cheat Sheet}}\\[1ex]
+  {\small Useful with Software Foundations Volume 6: Separation Logic Foundations. Cheat Sheet by Svend H. Sørensen}
+\end{center}
+
+\begin{multicols}{2}
+
+% \section*{Basic Definitions}
+% \[
+% \begin{array}{ll}
+%   H & \text{heap predicate} \\
+%   Q & \text{postcondition, short for } \lambda{v}.H \\
+%   \emp & \text{empty heap predicate} \\
+%   \left[ P \right]  & \text{pure fact} \\
+%   e \mapstoheap e' & \text{singleton heap mapping } e \text{ to } e' \\
+%   H_1 \star H_2 & \text{separating conjunction, disjoint parts} \\
+%   Q \qstar H & \text{separating conjunction, postcondition} \\
+%   \exists{x}, H & \text{existential quantifier} \\
+%   \forall{x}, H & \text{universal quantifier} \\
+%   \top & \text{top - true for any heap,} \top = \exists H, H \\
+%   H_1 \wedge H_2 & \text{non-separating conjunction} \\
+%   H_1 \vee H_2 & \text{disjunction} \\
+%   H_1 \hwand H_2 & \text{magic wand (heap extension)} \\
+%   \left[v/x\right]t & \text{substitude every var } x \text{ to value } v \text{ in term } t \\
+%   \odot & \text{only value of the unit type} \\
+% \end{array}
+% \]
+\section*{Tactics}
+Useful tactics for working with Seperation Logic.
+\[
+\begin{array}{ll}
+  \mathsf{xsimpl} &  \text{Simplifies heap entailments.} \\
+  \mathsf{xpull} & \text{As xsimpl but work on the left-hand side.} \\
+  \mathsf{xchange} & \text{Performs transitivity steps in entailments.} \\
+  \mathsf{rew\_heap} & \text{Normalizes heap predicate expressions.} \\
+  \mathsf{xconseq} & \text{Replaces the postcondition with a stronger one.} \\
+  \mathsf{xwp} & \text{Starting a proof with triple as goal.} \\
+  \mathsf{xapp} & \text{Reason about a function application.} \\
+  \mathsf{xval} & \text{Reason about a return value.} \\
+  \mathsf{xif} & \text{Reason about a conditional.} \\
+  \mathsf{induction\_wf} & \text{Well-founded inductions.} \\
+   \mathsf{gen} & \text{Generalizing variables for inductions.} \\
+  \mathsf{math} & \text{Solve pure math.} \\
+  \mathsf{case\_var} & \text{Case analysis on variable equalities.} \\
+  \mathsf{case\_if} & \text{Case analysis on (if ?B then ?E1 else ?E2).} \\
+  % The operation isTrue is provided by the TLC library as a conversion function from Prop to bool.  
+\end{array}
+\]
+
+\section*{Discard Rules}
+\[
+  \begin{array}{cl}
+    % Discard rules
+  \dfrac{\haffine{H'} \quad \triple{t}{H}{Q \qstar H'}}
+  {\triple{t}{H}{Q}} & \text{(triple\_haffine\_post)} \\
+ \\
+  \dfrac{\haffine{H'} \quad \triple{t}{H}{Q}}
+  {\triple{t}{H \star H'}{Q}} & \text{(triple\_hany\_pre)} \\
+  \\
+  \end{array}
+\]
+
+\section*{Affine Rules}
+\[
+  \begin{array}{cl}
+  % Affine definition
+  \dfrac{\forall h.~ H(h) \rightarrow \heapaffine{h}}
+  {\haffine{H}} & \text{(haffine)} \\
+  \\
+ \dfrac{}
+  {\haffine{\emp}} & \text{(haffine\_hempty)} \\
+  \\
+% Affine for pure predicates
+  \dfrac{}
+ {\haffine{[P]}} & \text{(haffine\_hpure)} \\
+ \\
+% Affine for separating conjunction
+  \dfrac{\haffine{H_1} \quad \haffine{H_2}}
+  { \haffine{H_1 \star H_2}} & \text{(haffine\_hstar)} \\
+  \\  
+% Affine for existential
+  \dfrac{\forall x.~ \haffine{J(x)}}
+  {\haffine{\exists x.~ J(x)}} & \text{(haffine\_hexists)} \\ 
+ \\
+% Affine for universal (inhabited type)
+  \dfrac{\exists x.~ \haffine{J(x)}}
+  {\haffine{\forall x.~ J(x)}} & \text{(haffine\_hforall')} \\
+  \\
+  \dfrac{\text{Inhab}(A) \quad \forall x.~ \haffine{J(x)}}
+  {\haffine{\forall x:A.~ J(x)}} & \text{(haffine\_hforall)} \\
+ \\
+% Affine for pure * H
+  \dfrac{P \Rightarrow \haffine{H}}
+  {\haffine{[P] \star H}} & \text{(haffine\_hstar\_hpure\_l)} \\
+  \\
+
+\end{array}
+\]
+
+\section*{Garbage collection/Affine Top (GC)}
+\[
+\begin{array}{cl}
+%  % Affine-Top predicate
+  \dfrac{\exists H.~ [\haffine{H}] \star H}
+  {\hgc} & \text{(hgc)} \\
+  \\
+  {\hgc}
+  \himpl
+  {\hgc \star \hgc} & \text{(hstar\_hgc\_hgc)} \\
+  \\
+  \dfrac{}
+  {\haffine \hgc} & \text{(haffine\_hgc)} \\
+  \\
+  \dfrac{\haffine{H}}
+  {H \himpl \hgc} & \text{(himpl\_hgc\_r)} \\
+  \\
+  {\emp}
+  \himpl
+  {\hgc} & \text{(hempty\_himpl\_hgc)} \\
+  \\
+  
+\end{array}
+\]
+
+\subsection*{Fully Affine Logic}
+All heaps and heap predicates are affine, and can be discarded. 
+\[
+  \begin{array}{cl}
+    \dfrac{\mathsf{True}}
+    { \haffine{H} } & \text{(haffine\_equiv)} \\
+    \\
+        
+%    Definition htop : hprop :=
+%  \exists H, H.
+    
+    {\top}
+    \himpl
+    {\hgc} & \text{(hgc)} \\
+  \\
+  \end{array}
+\]
+
+\subsection*{Fully Linear Logic}
+Only heaps and heap predicates proven or assumed to be affine can be discarded.
+\[
+\begin{array}{cl}
+  \dfrac{\haffine{H}}
+  {H \himpl \emp} & \text{(haffine\_equiv)} \\
+\\
+        
+%    Definition htop : hprop :=
+%  \exists H, H.
+    
+  {\emp}
+  \himpl
+   {\hgc} & \text{(hgc)} \\
+  \\  
+\end{array}
+\]
+
+% \section*{Operations}
+% \[
+% \begin{array}{cl}
+% {\triple{(val_add n1 n2)}{ \emp}{(fun r => [r = val\_int (n1 + n2)])} & \text{triple\_add} \\
+% \dfrac{n2 <> 0}
+% {\triple{(val_div n1 n2)}{\emp}{(fun r => [r = val\_int (Z.quot n1 n2)])} & \text{triple\_div} \\
+% \dfrac{n > 0}
+% {\triple{(val_rand n))}{\emp}{(fun r => [\exists n1, r = val_int n1 /\ 0 <= n1 < n])}
+% & \text{triple_rand} \\
+%   \triple{(val_neg b1)}{\emp}{(fun r => [r = val_bool (neg b1)])} & \text{triple\_neg} \\
+%   \triple{(val_opp n1)}{\emp}{(fun r => [r = val_int (- n1)])} & \text{triple_opp} \\
+%   \triple{(val_eq v1 v2)}{\emp}{(fun r => [r = isTrue (v1 = v2)])} & \text{triple_eq} \\
+%   \triple{(val_neq v1 v2)}{\emp}{(fun r => [r = isTrue (v1 <> v2)])} & \text{triple_neq} \\
+%   \triple{(val_sub n1 n2)}{\emp}{(fun r => [r = val_int (n1 - n2)])} & \text{triple_sub} \\
+%   \triple{(val_mul n1 n2)}{\emp}{(fun r => [r = val_int (n1 * n2)])} & \text{triple_mul} \\
+% Lemma triple_mod : forall n1 n2,
+%   \dfrac{n2 <> 0}
+%   {\triple{(val_mod n1 n2)}{\emp}{(fun r => [r = val_int (Z.rem n1 n2)])} & \text{triple_mod}
+
+% Lemma triple_le : forall n1 n2,
+%   triple (val_le n1 n2)
+%     \emp
+%     (fun r => [r = isTrue (n1 <= n2)]).
+% Proof using. intros. applys* triple_binop. applys* evalbinop_le. Qed.
+
+% Lemma triple_lt : forall n1 n2,
+%   triple (val_lt n1 n2)
+%     \emp
+%     (fun r => [r = isTrue (n1 < n2)]).
+% Proof using. intros. applys* triple_binop. applys* evalbinop_lt. Qed.
+
+% Lemma triple_ge : forall n1 n2,
+%   triple (val_ge n1 n2)
+%     \emp
+%     (fun r => [r = isTrue (n1 >= n2)]).
+% Proof using. intros. applys* triple_binop. applys* evalbinop_ge. Qed.
+
+% Lemma triple_gt : forall n1 n2,
+%   triple (val_gt n1 n2)
+%     \emp
+%     (fun r => [r = isTrue (n1 > n2)]).
+% Proof using. intros. applys* triple_binop. applys* evalbinop_gt. Qed.
+
+% Lemma triple_ptr_add : forall p n,
+%   p + n >= 0 ->
+%   triple (val_ptr_add p n)
+%     \emp
+%     (fun r => [r = val_loc (abs (p + n))]).
+% Proof using.
+%   intros. applys* triple_binop. applys* evalbinop_ptr_add.
+%   { rewrite~ abs_nonneg. }
+% Qed.
+
+% Lemma triple_ptr_add_nat : forall p (f:nat),
+%   triple (val_ptr_add p f)
+%     \emp
+%     (fun r => [r = val_loc (p+f)%nat]).
+% Proof using.
+%   intros. applys triple_conseq triple_ptr_add. { math. } { xsimpl. }
+%   { xsimpl. intros. subst. fequals.
+%     applys eq_nat_of_eq_int. rewrite abs_nonneg; math. }
+% Qed.
+
+\section*{Value Operations}
+\[
+\begin{array}{cl}
+  \triple{((+)~n_1~n_2)}{\emp}{\fun{r}{[r = \valint{n_1 + n_2}]}} & \text{(triple\_add)} \\
+\\
+  \dfrac{n_2 \neq 0}
+  {\triple{((/)~n_1~n_2)}{\emp}{\fun{r}{[r = \valint{\Zquot{n_1}{n_2}}]}}} & \text{(triple\_div)} \\
+  \\
+  \triple{((\neg)~b_1)}{\emp}{\fun{r}{[r = \valbool{\neg b_1}]}} & \text{(triple\_neg)} \\
+  \triple{((-)~n_1)}{\emp}{\fun{r}{[r = \valint{-n_1}]}} & \text{(triple\_opp)} \\
+  \triple{((=)~v_1~v_2)}{\emp}{\fun{r}{[r = \isTrue{v_1 = v_2}]}} & \text{(triple\_eq)} \\
+
+  \triple{((\neq)~v_1~v_2)}{\emp}{\fun{r}{[r = \isTrue{v_1 \neq v_2}]}} & \text{(triple\_neq)} \\
+  \triple{((-)~n_1~n_2)}{\emp}{\fun{r}{[r = \valint{n_1 - n_2}]}} & \text{(triple\_sub)} \\
+  \triple{((\cdot)~n_1~n_2)}{\emp}{\fun{r}{[r = \valint{n_1 \cdot n_2}]}} & \text{(triple\_mul)} \\
+  \\
+  \dfrac{n_2 \neq 0}
+  {\triple{((\mathbin{\%})~n_1~n_2)}{\emp}{\fun{r}{[r = \valint{\Zrem{n_1}{n_2}}]}}} & \text{(triple\_mod)} \\
+  \\
+  \triple{((\le)~n_1~n_2)}{\emp}{\fun{r}{[r = \isTrue{n_1 \le n_2}]}} & \text{(triple\_le)} \\
+  \triple{((<)~n_1~n_2)}{\emp}{\fun{r}{[r = \isTrue{n_1 < n_2}]}} & \text{(triple\_lt)} \\
+  \triple{((\ge)~n_1~n_2)}{\emp}{\fun{r}{[r = \isTrue{n_1 \ge n_2}]}} & \text{(triple\_ge)} \\
+  \triple{((>)~n_1~n_2)}{\emp}{\fun{r}{[r = \isTrue{n_1 > n_2}]}} & \text{(triple\_gt)} \\
+  \\
+  \dfrac{p + n \ge 0}
+  {\triple{((+)~p~n)}{\emp}{\fun{r}{[r = \valloc{\abs{p + n}}]}}} & \text{(triple\_ptr\_add)} \\
+  \\
+  \triple{((+)~p~f)}{\emp}{\fun{r}{[r = \valloc{p + f}]}} & \text{(triple\_ptr\_add\_nat)} \\
+\\
+  \dfrac{n > 0}
+    {\triple{(\mathsf{ra}~n)}{\emp}{\fun{r}{[\exists n_1.~ r = \valint{n_1} \wedge 0 \le n_1 < n]}}} & \text{(triple\_rand)} \\
+\end{array}
+\]
+                                                                            
+\end{multicols}
+
+\end{document}

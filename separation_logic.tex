@@ -1,0 +1,234 @@
+\documentclass[10pt,a4paper]{article}
+\usepackage[margin=5mm]{geometry}
+\usepackage{multicol}
+\usepackage{amsmath,amssymb}
+\usepackage{mathpartir}
+\usepackage{hyperref}
+
+%\usepackage{accents}
+%\newcommand{\qstar}{\underaccent{\cdot}{\star}}
+% Custom commands
+\newcommand{\emp}{[\: ]} %\mathit{emp}}
+\newcommand{\hwand}{-\!\!\star}
+\newcommand{\qwand}{-\!\!\text{\d{$\star$}}}
+\newcommand{\qstar}{\text{ \d{$\star$} }} %{\scriptscriptstyle\!\!+}}
+\newcommand{\mapstoheap}{\mapsto}
+\newcommand{\himpl}{\vdash}
+%\newcommand{\qimpl}{\underaccent{\cdot}{\vdash}}
+\newcommand{\qimpl}{\text{ \d{$\vdash$} }}
+\newcommand{\triple}[3]{\{#2\}\;#1\;\{#3\}}
+\hypersetup{
+ pdfauthor={Svend H. Sørensen},
+ pdftitle={Separation Logic Cheat Sheet},
+ pdfkeywords={Logic, Program logic, Substructural logic, Axiomatic semantics, Computer science},
+ pdfsubject={Axiomatic semantics},
+ pdfcreator={Emacs 26.3, pdflatex}, 
+ pdflang={English}}
+
+\begin{document}
+\pagestyle{empty}
+\begin{center}
+  {\LARGE \textbf{Separation Logic Cheat Sheet}}\\[1ex]
+  {\small Useful with Software Foundations Volume 6: Separation Logic Foundations. Cheat Sheet by Svend H. Sørensen}
+\end{center}
+
+\begin{multicols}{2}
+
+\section*{Basic Definitions}
+\[
+\begin{array}{ll}
+  H & \text{heap predicate} \\
+  Q & \text{postcondition, short for } \lambda{v}.H \\
+  \emp & \text{empty heap predicate} \\
+  \left[ P \right]  & \text{pure fact} \\
+  e \mapstoheap e' & \text{singleton heap mapping } e \text{ to } e' \\
+  H_1 \star H_2 & \text{separating conjunction, disjoint parts} \\
+  Q \qstar H & \text{separating conjunction, postcondition} \\
+  \exists{x}, H & \text{existential quantifier} \\
+  \forall{x}, H & \text{universal quantifier} \\
+  \top & \text{top - true for any heap} \\
+  H_1 \wedge H_2 & \text{non-separating conjunction} \\
+  H_1 \vee H_2 & \text{disjunction} \\
+  H_1 \hwand H_2 & \text{magic wand (heap extension)} \\
+  \left[v/x\right]t & \text{substitude every var } x \text{ to value } v \text{ in term } t \\
+  \odot & \text{only value of the unit type} \\
+  E[t] & \text{the context } E\text{ filled with the term } t\\
+\end{array}
+\]
+
+
+\subsection*{Basic Laws}
+\[
+\begin{array}{cl}
+  H_1 \star H_2 \equiv H_2 \star H_1& \text{(hstar\_comm)} \\
+  (H_1 \star H_2) \star H_3 \equiv H_1 \star (H_2 \star H_3) & \text{(hstar\_assoc)} \\
+  \emp \star P \equiv P & \text{(hstar\_hempty\_l)} \\
+  \\
+  \dfrac{H_1 \star H_0 \himpl H_2}
+  {H_0 \himpl H_1 \hwand H_2 }  \text{(hwand\_equiv)} &
+\dfrac{Q_1 \qstar Q_0 \qimpl Q_2}  
+    {Q_0 \qimpl Q_1 \qwand Q_2 }  \text{(qwand\_equiv)} \\
+  \\
+\dfrac{\exists (p:P),\emp}
+  {[P]} \text{(hpure)} &
+                         \dfrac{[True]}
+                         {\emp} \text{(hempty\_eq\_hpure\_true)}\\
+\\
+  \dfrac{\exists{b}.\text{if } b \text{ then } H_1 \text{ else } H_2}
+  {H_1 \vee H_2} \text{(hor)} &
+  \dfrac{\forall{b}.\text{if } b \text{ then } H_1 \text{ else } H_2}
+  {H_1 \wedge H_2} \text{(hand)} \\                              
+
+\end{array}
+\]
+
+\section*{Triple}
+\[
+  \{ H \}\; t \; \{ Q \}
+\]
+If $H$ holds on the initial heap, $t$ executes safely and yields a heap where $Q$ holds.
+
+\subsection*{Example}
+\[
+  \{ x \mapstoheap 3 \}\; x := x + 1\; \{ x \mapstoheap 4 \}
+\]
+
+\subsection*{Structual Rules}
+
+\[
+\begin{array}{cl}
+\dfrac{H \himpl H_1 \star (Q_1 \qwand Q) \quad \triple{t}{H_1}{Q_1}}
+{\triple{t}{H}{Q}} &\text{(triple\_ramified\_frame)} \\
+\\
+\dfrac{H \himpl H_1 \quad \triple{t}{H_1}{Q_1} \quad Q_1 \qimpl Q}
+  {\triple{t}{H}{Q}} & \text{(triple\_conseq)} \\
+  \\
+\dfrac{H \himpl H_1 \star H_2 \quad \triple{t}{H_1}{Q_1} \quad Q_1 \qstar H_2 \qimpl Q}
+  {\triple{t}{H}{Q}}  & \text{(triple\_conseq\_frame)} \\
+  \\
+
+\dfrac{\triple{t}{H}{Q}}
+  {\triple{t}{H \star H_1}{Q \qstar H_1}}  & \text{(triple\_frame)} \\
+  \\
+  
+\dfrac{P \Rightarrow \triple{t}{H}{Q}}
+  {\triple{t}{[P] \star H}{Q}}  & \text{(triple\_hpure)} \\
+  \\
+
+\dfrac{\triple{t}{H}{Q_1} \quad \forall v.\triple{E[v]}{Q_1\;v}{Q}}
+{\triple{E[t]}{H}{Q}} & \text{(triple\_bind)} \\  
+\end{array}
+\]
+
+\subsection*{Term Rules}
+
+\[
+\begin{array}{cl}
+\dfrac{\triple{t_1}{H}{\lambda v.\,H_1} \quad \triple{t_2}{H_1}{Q}}
+  {\triple{(t_1; t_2)}{H}{Q}} & \text{(triple\_seq)} \\
+  \\
+\dfrac{\triple{[v_1/x]t_2}{H}{Q}}
+{\triple{\text{(let }x = v_1\text{ in }t_2\text{)}}{H}{Q}} & \text{(triple\_let\_val)} \\
+\\
+\dfrac{b = \text{true} \Rightarrow \triple{t_1}{H}{Q} \quad b = \text{false} \Rightarrow \triple{t_2}{H}{Q}}
+  {\triple{(\text{if }b\text{ then }t_1\text{ else }t_2)}{H}{Q}} & \text{(triple\_if\_case)} \\
+  \\
+
+ % \dfrac{\triple{t_0}{H}{Q'} \quad \forall v.\;\triple{(\text{if }v\text{ then }t_1\text{ else }t_2)}{Q'\;v}{Q}}
+ %  {\triple{(\text{if }t_0\text{ then }t_1\text{ else }t_2)}{H}{Q}} &\text{(triple\_if\_trm)} \\
+ %  \\
+
+\dfrac{
+\triple{(\text{if } t_1 \text{ then } (t_2;~\text{while } t_1 t_2) \text{ else } \odot)}{H}{Q}
+}
+  {\triple{(\text{while } t_1~t_2)}{H}{Q}} & \text{(triple\_while)} \\
+  \\
+
+  \dfrac{v_1 = \lambda{x}.t_1 \quad \triple{[v_2/x]t_1}{H}{Q}}
+  {\triple{(v_1\;v_2)}{H}{Q}} & \text{(triple\_app\_fun)} \\
+  \\
+
+\dfrac{v_1 = \hat{\mu}f.\lambda{x}.t_1 \quad \triple{[v_2/x][v_1/f]t_1}{H}{Q}}
+{\triple{(v_1\;v_2)}{H}{Q}} & \text{(triple\_app\_fix)} \\
+\\
+\dfrac{H \himpl Q\;v}
+  {\triple{v}{H}{Q}} & \text{(triple\_val)} \\
+  \\
+\end{array}
+\]
+
+\subsection*{Reference Operations}
+
+\[
+ \begin{array}{ll}
+\triple{(\text{ref }v)}{\emp}{\lambda p.\;p \mapsto v} & \text{(triple\_ref)}\\
+   \triple{(!p)}{p \mapsto v}{\lambda r.\,[r = v] \star (p \mapsto v)} & \text{(triple\_get)} \\
+   \triple{(p := v)}{p \mapsto w}{\lambda\_.\,p \mapsto v} & \text{(triple\_set)} \\
+   \triple{(\text{free }p)}{p \mapsto v}{\lambda\_.\,\emp} & \text{(triple\_free)}
+\end{array}
+\]
+
+\section*{Weakest Precondition}
+
+
+\[
+\begin{array}{cl}
+\dfrac{H \himpl wp\;t\;Q}
+  { \triple{t}{H}{Q}} & \text{(wp\_equiv)} \\
+  \\
+  {(wp\;t\;Q_1) \star (Q_1 \qwand Q)}
+  \himpl
+  {wp\;t\;Q} & \text{(wp\_ramified)} \\
+  \\
+
+\dfrac{Q_1 \qimpl Q }
+  {wp\;t\;Q_1 \himpl wp\;t\;Q} & \text{(wp\_conseq)} \\
+  \\
+
+  {(wp\;t\;Q) \star H}
+  \himpl
+  { wp\;t\;(Q \qstar H)} & \text{(wp\_frame)} \\
+\\
+\dfrac{H \himpl (wp\;t\;Q_1) \star (Q_1 \qwand Q)}
+  {H \himpl wp\;t\;Q}  & \text{(wp\_ramified\_trans)} \\
+  \\
+
+  { wp\;t_1\;(\lambda v.\,wp\;t_2\;Q) }
+  \himpl
+  {wp\;(t_1; t_2)\;Q} & \text{(wp\_seq)} \\
+  \\
+  
+  \dfrac{ wp\;t_1\;(\lambda v.\,wp\;[v/x]t_2)\;Q}
+  { wp\;(\text{let }x = t_1\text{ in }t_2)\;Q } & \text{(wp\_let)} \\
+\\
+  \dfrac{ wp\;\text{if }b\text{ then }t_1\text{ else }t_2\;Q }
+  {wp\; (\text{if }b\text{ then }t_1\text{ else }t_2)\;Q} & \text{(wp\_if)} \\
+  \\
+
+  \dfrac{\text{if } b \text{ then } (wp\;t_1\;Q) \text{ else } (wp\;t_2\;Q)}
+{wp\;(\text{if }b\text{ then }t_1\text{ else }t_2) \;Q}
+                     & \text{(wp\_if\_case)} \\
+  \\
+\dfrac{
+  wp\; (\text{if } t_1 \text{ then } (t_2;\text{while } t_1 t_2) \text{ else }\odot)\;Q}
+{wp\;(\text{while } t_1 t_2)\;Q
+  } & \text{(wp\_while)} \\
+ \\
+  \dfrac{v_1 = \lambda{x}. t_1}
+  { wp\;([v_2/x]t_1)\;Q \himpl wp\;(v_1 v_2)\;Q} & \text{(wp\_app\_fun)} \\
+   \\
+  \dfrac{v_1 = \hat{\mu}f.\lambda{x}.t_1}
+  { wp\;([v_2/x][v_1/f]t_1)\;Q \himpl wp\;(v_1 v_2)\;Q} & \text{(wp\_app\_fix)} \\ 
+\end{array}
+\]
+
+% TODO: wp_app Wp_fix
+%Lemma wp_app_fix : forall f x v1 v2 t1 Q,
+%  v1 = val_fix f x t1 ->
+%  wp (subst x v2 (subst f v1 t1)) Q ==> wp (trm_app v1 v2) Q.
+%Proof using. introv EQ1. unfold wp. xsimpl; intros. applys* hoare_app_fix. Qed.
+%(* variant: introv EQ1. applys wp_eval_like. introv R. applys* eval_app_fix. *)
+
+
+\end{multicols}
+\end{document}
