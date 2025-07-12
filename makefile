@@ -1,4 +1,4 @@
-all: affine.pdf seperation_logic.pdf
+all: affine.pdf separation_logic.pdf
 
 %.pdf: %.tex
 	pdflatex -shell-escape -file-line-error $<
