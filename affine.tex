@@ -60,26 +60,6 @@
 
 \begin{multicols}{2}
 
-% \section*{Basic Definitions}
-% \[
-% \begin{array}{ll}
-%   H & \text{heap predicate} \\
-%   Q & \text{postcondition, short for } \lambda{v}.H \\
-%   \emp & \text{empty heap predicate} \\
-%   \left[ P \right]  & \text{pure fact} \\
-%   e \mapstoheap e' & \text{singleton heap mapping } e \text{ to } e' \\
-%   H_1 \star H_2 & \text{separating conjunction, disjoint parts} \\
-%   Q \qstar H & \text{separating conjunction, postcondition} \\
-%   \exists{x}, H & \text{existential quantifier} \\
-%   \forall{x}, H & \text{universal quantifier} \\
-%   \top & \text{top - true for any heap,} \top = \exists H, H \\
-%   H_1 \wedge H_2 & \text{non-separating conjunction} \\
-%   H_1 \vee H_2 & \text{disjunction} \\
-%   H_1 \hwand H_2 & \text{magic wand (heap extension)} \\
-%   \left[v/x\right]t & \text{substitude every var } x \text{ to value } v \text{ in term } t \\
-%   \odot & \text{only value of the unit type} \\
-% \end{array}
-% \]
 \section*{Tactics}
 Useful tactics for working with Seperation Logic.
 \[
@@ -202,9 +182,6 @@ Only heaps and heap predicates proven or assumed to be affine can be discarded.
   \dfrac{\haffine{H}}
   {H \himpl \emp} & \text{(haffine\_equiv)} \\
 \\
-        
-%    Definition htop : hprop :=
-%  \exists H, H.
     
   {\emp}
   \himpl
@@ -212,69 +189,6 @@ Only heaps and heap predicates proven or assumed to be affine can be discarded.
   \\  
 \end{array}
 \]
-
-% \section*{Operations}
-% \[
-% \begin{array}{cl}
-% {\triple{(val_add n1 n2)}{ \emp}{(fun r => [r = val\_int (n1 + n2)])} & \text{triple\_add} \\
-% \dfrac{n2 <> 0}
-% {\triple{(val_div n1 n2)}{\emp}{(fun r => [r = val\_int (Z.quot n1 n2)])} & \text{triple\_div} \\
-% \dfrac{n > 0}
-% {\triple{(val_rand n))}{\emp}{(fun r => [\exists n1, r = val_int n1 /\ 0 <= n1 < n])}
-% & \text{triple_rand} \\
-%   \triple{(val_neg b1)}{\emp}{(fun r => [r = val_bool (neg b1)])} & \text{triple\_neg} \\
-%   \triple{(val_opp n1)}{\emp}{(fun r => [r = val_int (- n1)])} & \text{triple_opp} \\
-%   \triple{(val_eq v1 v2)}{\emp}{(fun r => [r = isTrue (v1 = v2)])} & \text{triple_eq} \\
-%   \triple{(val_neq v1 v2)}{\emp}{(fun r => [r = isTrue (v1 <> v2)])} & \text{triple_neq} \\
-%   \triple{(val_sub n1 n2)}{\emp}{(fun r => [r = val_int (n1 - n2)])} & \text{triple_sub} \\
-%   \triple{(val_mul n1 n2)}{\emp}{(fun r => [r = val_int (n1 * n2)])} & \text{triple_mul} \\
-% Lemma triple_mod : forall n1 n2,
-%   \dfrac{n2 <> 0}
-%   {\triple{(val_mod n1 n2)}{\emp}{(fun r => [r = val_int (Z.rem n1 n2)])} & \text{triple_mod}
-
-% Lemma triple_le : forall n1 n2,
-%   triple (val_le n1 n2)
-%     \emp
-%     (fun r => [r = isTrue (n1 <= n2)]).
-% Proof using. intros. applys* triple_binop. applys* evalbinop_le. Qed.
-
-% Lemma triple_lt : forall n1 n2,
-%   triple (val_lt n1 n2)
-%     \emp
-%     (fun r => [r = isTrue (n1 < n2)]).
-% Proof using. intros. applys* triple_binop. applys* evalbinop_lt. Qed.
-
-% Lemma triple_ge : forall n1 n2,
-%   triple (val_ge n1 n2)
-%     \emp
-%     (fun r => [r = isTrue (n1 >= n2)]).
-% Proof using. intros. applys* triple_binop. applys* evalbinop_ge. Qed.
-
-% Lemma triple_gt : forall n1 n2,
-%   triple (val_gt n1 n2)
-%     \emp
-%     (fun r => [r = isTrue (n1 > n2)]).
-% Proof using. intros. applys* triple_binop. applys* evalbinop_gt. Qed.
-
-% Lemma triple_ptr_add : forall p n,
-%   p + n >= 0 ->
-%   triple (val_ptr_add p n)
-%     \emp
-%     (fun r => [r = val_loc (abs (p + n))]).
-% Proof using.
-%   intros. applys* triple_binop. applys* evalbinop_ptr_add.
-%   { rewrite~ abs_nonneg. }
-% Qed.
-
-% Lemma triple_ptr_add_nat : forall p (f:nat),
-%   triple (val_ptr_add p f)
-%     \emp
-%     (fun r => [r = val_loc (p+f)%nat]).
-% Proof using.
-%   intros. applys triple_conseq triple_ptr_add. { math. } { xsimpl. }
-%   { xsimpl. intros. subst. fequals.
-%     applys eq_nat_of_eq_int. rewrite abs_nonneg; math. }
-% Qed.
 
 \section*{Value Operations}
 \[
